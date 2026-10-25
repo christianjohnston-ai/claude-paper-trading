@@ -1,0 +1,17 @@
+{
+ "upstream": "https://github.com/tradermonty/claude-trading-skills",
+ "commit": "cb0f3aadffed6d1089db4b224162c964368baa46",
+ "verified": "all 1141 installed files byte-identical to upstream HEAD cb0f3aa on 2026-10-24 (git blob hashes)",
+ "hash_algorithm": "sha256 over sorted (relative path, sha256(file)) pairs, excluding __pycache__ and .DS_Store",
+ "skills": {
+  "market-breadth-analyzer": "8bd0a9b363757f2fc0ba59a83378e1aa968d7240406995f40be0953293e1cd4f",
+  "uptrend-analyzer": "931fbced439d894af25da29de21e1269c71448a3d8ad1753bf39ed9579f935cb",
+  "ibd-distribution-day-monitor": "82d531fcefb13a57cbe180af07872797d20d603ed0e8de8f10de2468c7ea7371",
+  "exposure-coach": "0648ebb5daa2d6b15ecdd9f6c3b3a83ce972ca72fe93a42c732c2ad5c35288ae",
+  "position-sizer": "efbadea552a6a0e6e8bd82d0c9540a1d92992db98704ba37fde9323bafd2fc26",
+  "stockbee-momentum-burst-screener": "c829bfdec368c26b5f08ad26bf99c27bb8abf0130c609ee55edf182a0ef39ff9",
+  "data-quality-checker": "565ce425082c605e408a5c70c2640883de8472eef626d12e63c151be40a4eae1",
+  "residual-edge-analyzer": "df27bad2f9b5afad6390a9b4fef1084b7f63830e6150cca88df8f0aaf6db724a",
+  "weekly-performance-digest": "0a62274ce6dbc2364cd10ff42764c64dbc3765d19140aace107b31f53cab8d3c"
+ }
+}

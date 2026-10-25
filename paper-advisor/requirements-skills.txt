@@ -1,0 +1,9 @@
+# Runtime dependencies of the AUDITED upstream skills that paper-advisor runs as isolated subprocesses
+# (see paper_advisor/skills_bridge.py). Versions pinned to tradermonty/claude-trading-skills uv.lock at
+# commit cb0f3aadffed6d1089db4b224162c964368baa46. The paper_advisor package itself imports none of these.
+requests==2.34.2
+urllib3==2.8.0
+certifi==2026.1.4
+idna==3.19
+charset-normalizer==3.4.4
+pyyaml==6.0.3

@@ -1,0 +1,29 @@
+# Installed third-party skills (tradermonty/claude-trading-skills): local only, keep out of git. The pattern names the
+# folder's children, not the folder, so this project's own skills can be re-included below: git never looks inside an
+# excluded directory, so a "!" line after ".claude/skills/" would do nothing.
+# SYNC WARNING: one "!" line per name in PROJECT_SKILLS (paper-advisor/tests/test_skills_bridge.py).
+.claude/skills/*
+!.claude/skills/operating-paper-advisor/
+
+# paper-advisor runtime state stays on this machine: the experiment database, cached source
+# evidence, generated reports, exports and backups are the experiment record, not source code.
+# Never commit or upload them (the brief forbids uploading the database).
+paper-advisor/data/
+paper-advisor/backups/
+paper-advisor/reports/
+paper-advisor/exports/
+paper-advisor/.venv/
+
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+
+# Browser-automation tool artifacts (QA screenshots/logs), never part of the app
+.playwright-mcp/
+
+# Claude Code hook caches: never part of the app
+.claude/tsc-cache/
+
+# Planning documents and design mockups: never committed
+Local/

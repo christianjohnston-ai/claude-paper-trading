@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# paper-advisor CLI wrapper. Works from any directory: it resolves the app from its own location.
+# Uses the project venv when present (needed only for the audited skills' subprocess dependencies);
+# the application itself is stdlib-only and also runs on any python3 >= 3.10.
+set -euo pipefail
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PY="$APP_DIR/.venv/bin/python"
+[ -x "$PY" ] || PY="$(command -v python3)"
+exec "$PY" "$APP_DIR/pa.py" "$@"

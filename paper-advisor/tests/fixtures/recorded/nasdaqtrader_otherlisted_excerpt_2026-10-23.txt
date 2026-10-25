@@ -1,0 +1,18 @@
+ACT Symbol|Security Name|Exchange|CQS Symbol|ETF|Round Lot Size|Test Issue|NASDAQ Symbol
+BRK.A|Berkshire Hathaway Inc. Common Stock|N|BRK.A|N|1|N|BRK.A
+BRK.B|Berkshire Hathaway Inc. New Common Stock|N|BRK.B|N|40|N|BRK.B
+DIA|State Street SPDR Dow Jones Industrial Average ETF Trust|P|DIA|Y|40|N|DIA
+IWM|iShares Russell 2000 Index Fund|P|IWM|Y|40|N|IWM
+JNJ|Johnson & Johnson Common Stock|N|JNJ|N|100|N|JNJ
+JPM|JP Morgan Chase & Co. Common Stock|N|JPM|N|40|N|JPM
+LLY|Eli Lilly and Company Common Stock|N|LLY|N|40|N|LLY
+PG|Procter & Gamble Company (The) Common Stock|N|PG|N|100|N|PG
+SPY|State Street SPDR S&P 500 ETF Trust|P|SPY|Y|40|N|SPY
+UNH|UnitedHealth Group Incorporated Common Stock (DE)|N|UNH|N|40|N|UNH
+XLE|State Street Energy Select Sector SPDR ETF|P|XLE|Y|100|N|XLE
+XLF|State Street Financial Select Sector SPDR ETF|P|XLF|Y|100|N|XLF
+XLK|State Street Technology Select Sector SPDR ETF|P|XLK|Y|100|N|XLK
+XLP|State Street Consumer Staples Select Sector SPDR ETF|P|XLP|Y|100|N|XLP
+XLV|State Street Health Care Select Sector SPDR ETF|P|XLV|Y|100|N|XLV
+XOM|ExxonMobil Holdings Corporation Common Stock|N|XOM|N|100|N|XOM
+File Creation Time: 1023202621:31||||||
