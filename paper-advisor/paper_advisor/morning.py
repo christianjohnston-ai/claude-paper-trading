@@ -68,6 +68,7 @@ def _default_skills(conn, paths, exp_id, run_id, now):
 def start(conn, paths, *, now=None, model_provider="anthropic/claude-code", model_id="unknown", model_effort="unknown",
           new_analysis=False, force_recover=False, refresher=None, skills_runner=None, news_fetcher=None,
           transport=None, with_news=True, with_skills=True) -> dict:
+    now_injected = now is not None
     now = now or clock.now_utc()
     assert_clock_allowed(conn)
     exp_id = experiments.active_experiment_id(conn)
@@ -115,9 +116,17 @@ def start(conn, paths, *, now=None, model_provider="anthropic/claude-code", mode
         backup_info = db.backup(conn, paths.backups_dir, reason=f"pre-morning run {run_id}")
         db.prune_backups(paths.backups_dir, cfg.backup_keep, db.db_mode(conn))
         refresh_rep = (refresher or _default_refresher)(conn, paths, exp_id, now, run_id, transport) if refresher is not False else None
-        settle_rep = broker_sim.settle(conn, exp_id, now, run_id=run_id).as_dict()
+        # Settle with a clock reading taken AFTER the refresh, not with `now`. The refresh stamps each bar it stores with
+        # its real download time, seconds after `now`, and the fills table refuses a fill recorded before its bar was
+        # retrieved (CHECK recorded_at >= bar_retrieved_at). Settling at `now` crashed every morning run that had an
+        # order to fill, which includes the first run after an account's first market session (it fills the SPY
+        # benchmark's opening buy). The reconcile right below and a reconcile-only rerun's _finish use the same
+        # reading, because reconcile's timing check also requires recorded_at <= its "now".
+        # A caller that pins `now` keeps it; production never does, and a fake clock is read through clock.now_utc().
+        settle_now = now if now_injected else max(now, clock.now_utc())
+        settle_rep = broker_sim.settle(conn, exp_id, settle_now, run_id=run_id).as_dict()
         with db.transaction(conn):
-            recon = reconcile.run_checks(conn, exp_id, run_id, now)
+            recon = reconcile.run_checks(conn, exp_id, run_id, settle_now)
         news = {}
         if with_news and db.db_mode(conn) == "forward":
             syms = _news_symbols(conn, exp_id, now, cfg, refresh_rep)
@@ -147,7 +156,7 @@ def start(conn, paths, *, now=None, model_provider="anthropic/claude-code", mode
                   "reconciliation_failures": [r["check"] for r in recon if not r["passed"]], "recovered_runs": recovered,
                   "supersedes_run_id": supersedes}
         if mode == "reconcile_only":
-            fin = _finish(conn, paths, exp_id, run_id, token, now, cfg)
+            fin = _finish(conn, paths, exp_id, run_id, token, settle_now, cfg)
             result["report_path"] = fin["report_path"]
             result["note"] = ("An analysis for this session already exists (run "
                               f"{submitted[-1]['id']}). This rerun only reconciled and reported. Use --new-analysis for a "

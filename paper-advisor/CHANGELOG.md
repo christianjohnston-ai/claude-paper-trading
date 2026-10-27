@@ -12,3 +12,20 @@
 - State impact: None
 - Field mutations: None
 - Performance: None measured
+
+## 2026-10-27 - Type: State
+- Change: morning.start() now settles fills with a clock reading taken after the data refresh, not the time the run
+  started. A morning run with an order to fill crashed with "CHECK constraint failed: recorded_at >=
+  bar_retrieved_at": the refresh stored the fill session's bars stamped with their real download time, seconds after
+  the start time, and settlement recorded the fills at the earlier start time, which the fills table refuses. Every
+  account hits it, on the first run after its first market session, because that run fills the SPY
+  benchmark's opening buy. Running /paper-morning again got past it, since the bars were then already stored. The
+  reconcile after settlement and a reconcile-only rerun's finish use the same reading, because reconcile's timing
+  check requires recorded_at <= its time. Two regression tests reproduce the crash (an analysis run and a
+  reconcile-only rerun) and failed before the fix.
+- Files: paper_advisor/morning.py, tests/test_morning_lifecycle.py
+- State impact: None to transitions. Fill and ledger rows recorded at a morning start now carry a time a few seconds
+  after the run's start time instead of the start time itself. code_tree_sha256 covers morning.py, so the next run
+  records a new build.
+- Field mutations: None (fills.recorded_at and ledger_events.recorded_at keep their meaning: when the row was written)
+- Performance: None measured (one extra clock read)

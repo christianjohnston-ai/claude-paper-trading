@@ -201,3 +201,45 @@ def test_finish_reconciles_again_so_reconciled_covers_the_runs_own_writes(fixtur
     last = fixture_db.execute("SELECT MAX(at) FROM reconciliation_results WHERE run_id=?", (s["run_id"],)).fetchone()[0]
     assert last > sub_at
     assert all(r[0] for r in fixture_db.execute("SELECT passed FROM reconciliation_results WHERE run_id=? AND at=?", (s["run_id"], last)))
+
+
+def _late_download(w, finished_at):
+    """Stands in for ingest.refresh. The real download finishes seconds after start() reads the clock, and the bars it
+    stores carry that later retrieval time, so this one moves the clock forward before storing Monday's bars."""
+    def refresh(conn, paths, exp_id, now, run_id, transport):
+        w.at(finished_at)
+        for sym, px in FRESH.items():
+            w.bar(sym, "2026-10-26", px, retrieved_at=w.now_iso())
+        return {}
+    return refresh
+
+
+def test_fills_settle_when_the_refresh_downloads_their_bars_after_the_run_started(fixture_db, app_paths):
+    """A morning run used to crash with "CHECK constraint failed: recorded_at >= bar_retrieved_at": start() read the
+    clock once, the refresh then stored Monday's bars stamped a few seconds later, and settlement recorded the fills
+    at the earlier start time. Every morning with something to fill failed the same way."""
+    w = world(fixture_db)
+    full_run(fixture_db, app_paths, [pd("BUY", "DEMO.A")])  # orders for the Mon Oct 26 open, plus the benchmark's
+    w.at("2026-10-27T12:15:00")  # Tue 5:15 AM PT; Monday's bars are not stored yet
+    s = morning.start(fixture_db, app_paths, model_id="test-model", with_news=False, with_skills=False,
+                      refresher=_late_download(w, "2026-10-27T12:15:05"))
+    assert s["mode"] == "analysis" and len(s["settled"]["fills"]) == 2
+    assert s["reconciliation_failures"] == []
+    rows = fixture_db.execute("SELECT bar_retrieved_at, recorded_at FROM fills").fetchall()
+    assert len(rows) == 2 and all(r["recorded_at"] >= r["bar_retrieved_at"] for r in rows)
+
+
+def test_a_reconcile_only_rerun_settles_and_reconciles_late_downloaded_fills(fixture_db, app_paths):
+    """The same crash in a reconcile-only rerun. Its finish also has to reconcile with the later time, or the timing
+    check flags the fills it just recorded as recorded after "now"."""
+    w = world(fixture_db)
+    full_run(fixture_db, app_paths, [pd("BUY", "DEMO.A")])  # Sat: orders for the Mon Oct 26 open
+    w.at("2026-10-26T21:30:00")  # Mon after the close, Monday's bars not stored: settlement waits for them
+    full_run(fixture_db, app_paths, [pd("NO_TRADE")])  # decides the Tue Oct 27 open
+    w.at("2026-10-27T12:15:00")
+    s = morning.start(fixture_db, app_paths, model_id="test-model", with_news=False, with_skills=False,
+                      refresher=_late_download(w, "2026-10-27T12:15:05"))
+    assert s["mode"] == "reconcile_only" and len(s["settled"]["fills"]) == 2
+    assert s["reconciliation_failures"] == []
+    last = fixture_db.execute("SELECT MAX(at) FROM reconciliation_results WHERE run_id=?", (s["run_id"],)).fetchone()[0]
+    assert all(r[0] for r in fixture_db.execute("SELECT passed FROM reconciliation_results WHERE run_id=? AND at=?", (s["run_id"], last)))
